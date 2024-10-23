@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seletores de UF e Cidades</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        select {
+            padding: 8px;
+            margin-bottom: 20px;
+            width: 200px;
+        }
+        select:disabled {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Selecione uma UF e uma Cidade</h1>
+
+    <label for="uf">UF:</label>
+    <select id="uf" onchange="carregarCidades()">
+        <option value="">Selecione uma UF</option>
+    </select>
+
+    <label for="cidade">Cidade:</label>
+    <select id="cidade" disabled>
+        <option value="">Selecione uma cidade</option>
+    </select>
+
+    <script>
+        async function carregarUFs() {
+            const ufSelect = document.getElementById('uf');
+            const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados');
+            const estados = await response.json();
+
+            estados.sort((a, b) => a.nome.localeCompare(b.nome));
+
+            estados.forEach(estado => {
+                const option = document.createElement('option');
+                option.value = estado.id;
+                option.textContent = estado.nome;
+                ufSelect.appendChild(option);
+            });
+        }
+
+        // Carregar as cidades da UF selecionada
+        async function carregarCidades() {
+            const ufSelect = document.getElementById('uf');
+            const cidadeSelect = document.getElementById('cidade');
+            const ufId = ufSelect.value;
+
+            // Habilitar ou desabilitar o dropdown de cidades
+            if (ufId) {
+                cidadeSelect.disabled = false;
+
+                // Limpar as cidades anteriores
+                cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
+
+                // Buscar cidades da UF selecionada
+                const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${ufId}/municipios`);
+                const cidades = await response.json();
+
+                // Ordenar as cidades em ordem alfabética
+                cidades.sort((a, b) => a.nome.localeCompare(b.nome));
+
+                cidades.forEach(cidade => {
+                    const option = document.createElement('option');
+                    option.value = cidade.id;
+                    option.textContent = cidade.nome;
+                    cidadeSelect.appendChild(option);
+                });
+            } else {
+                cidadeSelect.disabled = true;
+                cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
+            }
+        }
+
+        // Carregar as UFs ao carregar a página
+        carregarUFs();
+    </script>
+</body>
+</html>

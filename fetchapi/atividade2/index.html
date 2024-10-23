@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preencher Endereço pelo CEP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input {
+            padding: 8px;
+            margin-bottom: 20px;
+            width: 300px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Preencha o CEP</h1>
+
+    <label for="cep">CEP:</label>
+    <input type="text" id="cep" placeholder="Digite o CEP" onblur="buscarEndereco()">
+
+    <label for="logradouro">Logradouro:</label>
+    <input type="text" id="logradouro" disabled>
+
+    <label for="bairro">Bairro:</label>
+    <input type="text" id="bairro" disabled>
+
+    <label for="cidade">Cidade:</label>
+    <input type="text" id="cidade" disabled>
+
+    <label for="estado">Estado:</label>
+    <input type="text" id="estado" disabled>
+
+    <script>
+        async function buscarEndereco() {
+            const cep = document.getElementById('cep').value.replace(/\D/g, '');
+            if (cep.length === 8) {
+                try {
+                    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                    const data = await response.json();
+
+                    if (data.erro) {
+                        alert('CEP não encontrado.');
+                        limparCampos();
+                    } else {
+                        document.getElementById('logradouro').value = data.logradouro;
+                        document.getElementById('bairro').value = data.bairro;
+                        document.getElementById('cidade').value = data.localidade;
+                        document.getElementById('estado').value = data.uf;
+                    }
+                } catch (error) {
+                    alert('Erro ao buscar o CEP.');
+                    limparCampos();
+                }
+            } else {
+                alert('CEP inválido. Por favor, insira um CEP com 8 dígitos.');
+                limparCampos();
+            }
+        }
+
+        function limparCampos() {
+            document.getElementById('logradouro').value = '';
+            document.getElementById('bairro').value = '';
+            document.getElementById('cidade').value = '';
+            document.getElementById('estado').value = '';
+        }
+    </script>
+</body>
+</html>
